@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management API Test</title>
+</head>
+<body>
+
+<h1>Vehicle Management API</h1>
+
+<button onclick="getVehicles()">Get Vehicles</button>
+<button onclick="registerUser()">Register User</button>
+<button onclick="loginUser()">Login User</button>
+<button onclick="getVehicleById()">Get Vehicle By ID</button>
+<button onclick="deleteVehicle()">Delete Vehicle</button>
+<button onclick="updateVehicle()">Update Vehicle</button>
+
+<h2>Response:</h2>
+<pre id="response"></pre>
+
+<script>
+    async function fetchApi(url, method = "GET", body = null) {
+        const options = {
+            method,
+            headers: { "Content-Type": "application/json" }
+        };
+        if (body) options.body = JSON.stringify(body);
+
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            document.getElementById("response").textContent = JSON.stringify(data, null, 4);
+        } catch (error) {
+            document.getElementById("response").textContent = "Error: " + error;
+        }
+    }
+
+    function getVehicles() {
+        fetchApi("/api/vehicles");
+    }
+
+    function registerUser() {
+        fetchApi("/api/users/register", "POST", { username: "test", password: "1234" });
+    }
+
+    function loginUser() {
+        fetchApi("/api/users/login", "POST");
+    }
+
+    function getVehicleById() {
+        const vehicleId = prompt("Enter Vehicle ID:");
+        if (vehicleId) {
+            fetchApi(`/api/vehicles?vehicle_id=${vehicleId}`, "POST");
+        }
+    }
+
+    function deleteVehicle() {
+        const vehicleId = prompt("Enter Vehicle ID to delete:");
+        if (vehicleId) {
+            fetchApi(`/api/vehicles/?vehicle_id=${vehicleId}`, "DELETE");
+        }
+    }
+
+    function updateVehicle() {
+        const vehicleId = prompt("Enter Vehicle ID to update:");
+        if (vehicleId) {
+            fetchApi("/api/vehicles", "PUT", { vehicle_id: vehicleId, name: "Updated Vehicle" });
+        }
+    }
+</script>
+
+</body>
+</html>
