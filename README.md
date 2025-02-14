@@ -58,3 +58,9 @@ Visit http://localhost:3000 to view the frontend.
 
 
 2. Configure the database in `application.properties
+
+
+
+15 Feb 2025 
+Created initial task seperation.
+
