@@ -5,6 +5,7 @@ import com.example.vehiclemanagement.repositories.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -31,5 +32,9 @@ public class VehicleDetailsService {
                 vehicle.getBrand(),
                 vehicle.getModel(),vehicle.getPrice_per_day(),
                 vehicle.getAvailability(),vehicle.getRegistration_number());
+    }
+
+    public BigDecimal getPriceWithId(String vehicleId) {
+        return vehicleRepository.getPriceFor(vehicleId);
     }
 }

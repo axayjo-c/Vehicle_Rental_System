@@ -1,5 +1,6 @@
 package com.example.vehiclemanagement.api;
 
+import com.example.vehiclemanagement.entity.BookingRequest;
 import com.example.vehiclemanagement.entity.User;
 import com.example.vehiclemanagement.entity.Vehicle;
 import com.example.vehiclemanagement.services.BookingDetalisService;
@@ -52,6 +53,16 @@ public class apiController {
     public Vehicle updateVehicle(@RequestBody Vehicle vehicle){
         vehicleDetailsService.updateVehicle(vehicle);
         return this.vehicleDetailsService.vehicleWithId(vehicle.getVehicle_id());
+    }
+
+
+    @PostMapping("/api/bookings/create")
+    public String book(@RequestBody BookingRequest bookingRequest){
+
+        System.out.println(":)");
+       return bookingDetalisService.createBookingWith(bookingRequest);
+
+
     }
 
 }

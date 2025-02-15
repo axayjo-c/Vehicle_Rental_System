@@ -5,6 +5,7 @@ import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface VehicleRepository extends CrudRepository<Vehicle,Integer> {
@@ -31,4 +32,8 @@ public interface VehicleRepository extends CrudRepository<Vehicle,Integer> {
                 String brand, String model,
                 Integer pricePerDay, String availability,
                 String registrationNumber);
+
+    @Query("SELECT price_per_day FROM vehicles WHERE vehicle_id = :vehicleId")
+    BigDecimal getPriceFor(String vehicleId);
+
 }
