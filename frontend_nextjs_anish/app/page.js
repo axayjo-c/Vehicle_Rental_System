@@ -1,30 +1,12 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import {
-  Car,
-  Clock,
-  Shield,
-  ChevronRight,
-  Star,
-  Users,
-  HelpCircle,
-} from "lucide-react";
-
-function FAQItem({ question, answer }) {
-  return (
-    <div className="p-4 border rounded-lg bg-[var(--section-bg)] shadow-md">
-      <div className="flex items-center gap-3">
-        <HelpCircle className="text-[var(--btn-bg)] w-6 h-6" />
-        <h3 className="text-lg font-semibold">{question}</h3>
-      </div>
-      <p className="text-[var(--text-muted)] mt-2">{answer}</p>
-    </div>
-  );
-}
-
+import { ChevronRight } from "lucide-react";
+import FeatureCard from "./components/FeatureCard";
+import CarCard from "./components/CarCard";
+import TestimonialCard from "./components/TestimonialCard";
+import FAQItem from "./components/FAQItem";
 export default function Home() {
   return (
     <main className="w-full min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -70,22 +52,22 @@ export default function Home() {
             description:
               "Hassle-free transactions with multiple payment options.",
           },
-        ].map(({ icon, title, description }, index) => (
-          <FeatureCard
-            key={index}
-            icon={icon}
-            title={title}
-            description={description}
-          />
+        ].map((feature, index) => (
+          <FeatureCard key={index} {...feature} />
         ))}
       </section>
 
       {/* 🚘 Car Showcase Section */}
       <section className="max-w-6xl mx-auto py-16 px-6">
-        <h2 className="text-3xl font-bold text-center">Popular Cars</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
+        <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-gray-100">
+          Popular Cars
+        </h2>
+        <p className="text-center text-lg text-gray-600 dark:text-gray-300 mt-2">
+          Experience luxury and performance with our most popular rentals.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-10">
           {[
-            // Sample Data (Replace with API data)
             {
               name: "Tesla Model 3",
               price: "₹5,500/day",
@@ -96,7 +78,11 @@ export default function Home() {
               price: "₹15,000/day",
               img: "/cars/mercedes.jpg",
             },
-            { name: "BMW X5", price: "₹10,000/day", img: "/cars/bmw.jpg" },
+            {
+              name: "BMW X5",
+              price: "₹10,000/day",
+              img: "/cars/bmw.jpg",
+            },
           ].map((car, index) => (
             <CarCard key={index} car={car} />
           ))}
@@ -156,64 +142,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* 🚀 Call to Action */}
-      <section className="max-w-5xl mx-auto py-12 px-6 text-center bg-[var(--section-bg)] rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold">Ready to Hit the Road?</h2>
-        <p className="text-lg text-[var(--text-muted)] mt-2">
-          Book your rental car now and start your journey with ease.
-        </p>
-        <Link href="/cars">
-          <button className="btn-primary mt-6">Book Now</button>
-        </Link>
-      </section>
     </main>
-  );
-}
-
-/* 🏗️ Reusable Components */
-function FeatureCard({ icon, title, description }) {
-  const IconComponent = { Car, Clock, Shield }[icon] || Car;
-  return (
-    <div className="flex flex-col items-center">
-      <IconComponent className="text-[var(--btn-bg)] w-12 h-12 mb-4" />
-      <h3 className="text-xl font-semibold">{title}</h3>
-      <p className="text-[var(--text-muted)] mt-2">{description}</p>
-    </div>
-  );
-}
-
-function CarCard({ car }) {
-  return (
-    <div className="card p-4">
-      <Image
-        src={car.img}
-        width={400}
-        height={250}
-        alt={car.name}
-        className="rounded-lg shadow-md"
-        priority
-      />
-      <h3 className="text-xl font-semibold mt-4">{car.name}</h3>
-      <p className="text-[var(--text-muted)]">{car.price}</p>
-      <Link href="/cars">
-        <button className="btn-primary mt-4 w-full">View Details</button>
-      </Link>
-    </div>
-  );
-}
-
-function TestimonialCard({ review }) {
-  return (
-    <div className="card p-4 text-center">
-      <Users className="text-[var(--btn-bg)] w-10 h-10 mx-auto mb-3" />
-      <p className="text-lg font-semibold">{review.name}</p>
-      <p className="text-[var(--text-muted)] mt-2">"{review.review}"</p>
-      <div className="flex justify-center mt-2">
-        {Array.from({ length: review.rating }).map((_, i) => (
-          <Star key={i} className="text-yellow-500 w-5 h-5" />
-        ))}
-      </div>
-    </div>
   );
 }
