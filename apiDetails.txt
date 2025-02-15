@@ -1,0 +1,42 @@
+
+## API Endpoints
+
+### **Authentication API **
+
+| Endpoint                 | Method  | Description                      |
+| ------------------------ | ------- | -------------------------------- |
+| `/api/auth/register`     | **POST** | Register a new user              |
+| `/api/auth/login`        | **POST** | Authenticate user and return JWT |
+| `/api/users/profile`     | **GET**  | Fetch user profile               |
+| `/api/users/update`      | **PUT**  | Update user profile              |
+| `/api/users/delete/{id}` | **DELETE** | Delete user account (Admin only) |
+
+### **Vehicle Management API **
+
+| Endpoint                     | Method  | Description                              |
+| ---------------------------- | ------- | ---------------------------------------- |
+| `/api/vehicles/`             | **GET**  | List all vehicles                        |
+| `/api/vehicles/{id}/`        | **GET**  | Get vehicle details                      |
+| `/api/vehicles/add/`         | **POST** | Add a new vehicle (Admin/Owner)          |
+| `/api/vehicles/update/{id}/` | **PUT**  | Update vehicle details (Admin/Owner)     |
+| `/api/vehicles/delete/{id}/` | **DELETE** | Remove a vehicle listing (Admin/Owner)   |
+
+### **Booking API **
+
+| Endpoint                     | Method  | Description                         |
+| ---------------------------- | ------- | ----------------------------------- |
+| `/api/bookings/`             | **GET**  | Get user bookings                   |
+| `/api/bookings/create/`      | **POST** | Book a vehicle                      |
+| `/api/bookings/cancel/{id}/` | **DELETE** | Cancel a booking                    |
+| `/api/bookings/history/`     | **GET**  | Get booking history of a user       |
+| `/api/bookings/status/{id}/` | **PUT**  | Update booking status (Admin/Owner) |
+
+### **Payment API **
+
+| Endpoint                     | Method  | Description           |
+| ---------------------------- | ------- | --------------------- |
+| `/api/payments/`             | **GET**  | Fetch all payments    |
+| `/api/payments/process/`     | **POST** | Process a new payment |
+| `/api/payments/refund/{id}/` | **POST** | Refund a payment      |
+
+---
