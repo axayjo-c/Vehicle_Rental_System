@@ -20,23 +20,25 @@ public class securityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception{
-//        System.out.printf("FILTER CHIAN \n");
-//        http.authorizeHttpRequests(
-//                        r -> {
-//                            r.requestMatchers(HttpMethod.DELETE, "/api/**").hasAuthority("admin");
-//                            r.requestMatchers(HttpMethod.PUT, "/api/**").hasAuthority("admin");
-//                            r.requestMatchers("/api/**").permitAll();
-//
-//                            r.requestMatchers("/users/register").permitAll();
-//                            r.requestMatchers("/login").permitAll();
-//                            r.anyRequest().authenticated();
-//                        })
-//                .httpBasic(Customizer.withDefaults())
-//                .formLogin(Customizer.withDefaults());
-
+        System.out.printf("FILTER CHIAN \n");
         http.authorizeHttpRequests(
-                r->r.anyRequest().permitAll()
-        );
+                        r -> {
+                            r.requestMatchers(HttpMethod.DELETE, "/api/**").hasAuthority("admin");
+                            r.requestMatchers(HttpMethod.PUT, "/api/**").hasAuthority("admin");
+                            r.requestMatchers(HttpMethod.GET,"/api/vehicles").permitAll();
+                            r.requestMatchers(HttpMethod.POST,"/api/**").hasAuthority("user");
+                            r.requestMatchers("/users/register").permitAll();
+                            r.requestMatchers("/login").permitAll();
+                            r.anyRequest().authenticated();
+                        })
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults());
+
+
+
+//        http.authorizeHttpRequests(
+//                r->r.anyRequest().permitAll()
+//        );
         http.csrf().disable();
 
         return  http.build();
