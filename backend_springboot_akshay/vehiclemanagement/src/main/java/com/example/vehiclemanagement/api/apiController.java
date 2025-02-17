@@ -6,9 +6,14 @@ import com.example.vehiclemanagement.entity.Vehicle;
 import com.example.vehiclemanagement.services.BookingDetalisService;
 import com.example.vehiclemanagement.services.PaymentDetailsService;
 import com.example.vehiclemanagement.services.VehicleDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class apiController {
@@ -25,6 +30,7 @@ public class apiController {
         this.vehicleDetailsService = vehicleDetailsService;
         this.paymentDetailsService = paymentDetailsService;
     }
+
 
 
     @PostMapping ("/users/register")
@@ -55,14 +61,16 @@ public class apiController {
         return this.vehicleDetailsService.vehicleWithId(vehicle.getVehicle_id());
     }
 
-
     @PostMapping("/api/bookings/create")
-    public String book(@RequestBody BookingRequest bookingRequest){
+    public ResponseEntity<?> book(@RequestBody BookingRequest bookingRequest, Authentication authentication){
+
+        if(!authentication.isAuthenticated()){
+            return "REDIRECT:";
+        }
 
         System.out.println(":)");
-       return bookingDetalisService.createBookingWith(bookingRequest);
-
-
+       String bookingId =  bookingDetalisService.createBookingWith(bookingRequest);
+        return ResponseEntity.ok(Map.of("bookingId", bookingId));
     }
 
 }
