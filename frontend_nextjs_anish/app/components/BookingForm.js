@@ -32,32 +32,48 @@ export default function BookingForm({ vehicleId, onClose }) {
     }
 
     const bookingData = {
-      vehicle_id: vehicleId, // Ensure this matches the backend API field
-      start_date: startDate,
-      end_date: endDate,
-      user_id: "1", // Replace with real user ID later
+      vehicleId: vehicleId,
+      startDate: startDate,
+      endDate: endDate,
+      userId: "1",
     };
 
     try {
-      console.log("Sending Booking Data:", bookingData);
-      console.log("Request URL:", `${API_URL}/api/bookings/create`);
+      console.log("🚀 Sending Booking Data:", bookingData);
+      console.log("🌐 Request URL:", `${API_URL}/api/bookings/create`);
+
       const response = await fetch(`${API_URL}/api/bookings/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
+        mode: "cors",
       });
 
-      const result = await response.json(); // Parse JSON response
-      console.log("API Response:", result);
-      console.log("Response Status:", response.status);
+      // ✅ Check Content-Type before parsing JSON
+      const contentType = response.headers.get("content-type");
+      let result;
+
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        result = await response.text(); // Read as text if not JSON
+        console.warn("⚠️ Response is not JSON:", result);
+        setMessage(`✅ Booking successful! Reference ID: ${result}`);
+        setLoading(false);
+        return;
+      }
+
+      console.log("✅ API Response:", result);
+      console.log("📡 Response Status:", response.status);
 
       if (response.ok) {
         setMessage("✅ Booking confirmed!");
-        setTimeout(() => onClose(), 2000); // Auto-close form after success
+        setTimeout(onClose, 2000);
       } else {
         setMessage(`❌ Booking failed: ${result.message || "Try again."}`);
       }
     } catch (error) {
+      console.error("🚨 Network error:", error);
       setMessage("❌ Network error. Please check your connection.");
     } finally {
       setLoading(false);
@@ -67,7 +83,7 @@ export default function BookingForm({ vehicleId, onClose }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50 animate-fadeIn">
       <div className="relative bg-white dark:bg-gray-900 p-6 rounded-xl shadow-2xl w-[400px]">
-        {/* Close Button (Top Right) */}
+        {/* Close Button */}
         <button
           className="absolute top-3 right-3 text-gray-600 dark:text-gray-300 hover:text-red-500 transition-all"
           onClick={onClose}
@@ -91,7 +107,7 @@ export default function BookingForm({ vehicleId, onClose }) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]} // Prevent past dates
+              min={new Date().toISOString().split("T")[0]}
               required
               className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all"
             />
@@ -106,7 +122,7 @@ export default function BookingForm({ vehicleId, onClose }) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              min={startDate} // Ensure end date is after start date
+              min={startDate}
               required
               className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all"
             />
