@@ -1,68 +1,87 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import VehicleCard from "./VehicleCard";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function VehicleList() {
   const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchVehicles() {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        if (!apiUrl) {
-          throw new Error("API URL is not defined");
-        }
-
-        const response = await fetch(`${apiUrl}/api/vehicles`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch vehicles");
-        }
-        const data = await response.json();
-        setVehicles(data);
-      } catch (err) {
-        console.error("Error fetching vehicles:", err); // Log the full error for debugging
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchVehicles();
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/vehicles`)
+      .then((res) => res.json())
+      .then((data) => setVehicles(data));
   }, []);
 
-  if (loading) return <p className="text-center">Loading vehicles...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
-
-  if (vehicles.length === 0) {
-    return (
-      <section className="max-w-6xl mx-auto py-16 px-6 text-center">
-        <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-          No Vehicles Available
-        </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mt-2">
-          We're sorry, but we don't have any vehicles available at the moment.
-        </p>
-      </section>
+  const deleteVehicle = (id) => {
+    fetch(`/api/vehicles/${id}`, { method: "DELETE" }).then(() =>
+      setVehicles(vehicles.filter((vehicle) => vehicle.id !== id))
     );
-  }
+  };
+
+  const updateVehicle = (id) => {
+    window.location.href = `/admin/edit-vehicle/${id}`;
+  };
+
+  const renderVehicles = (type) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {vehicles
+        .filter((v) => v.type === type)
+        .map((vehicle) => (
+          <div
+            key={vehicle.id}
+            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col justify-between"
+          >
+            <Image
+              src={vehicle.image_url}
+              alt={vehicle.model}
+              width={300}
+              height={200}
+              className="w-full h-32 object-cover rounded-md mb-2"
+              priority
+              unoptimized
+            />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {vehicle.brand} {vehicle.model}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              {vehicle.price_per_day}
+            </p>
+            <div className="flex justify-between mt-2">
+              <button
+                onClick={() => updateVehicle(vehicle.id)}
+                className="text-blue-600"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => deleteVehicle(vehicle.id)}
+                className="text-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+    </div>
+  );
 
   return (
-    <section className="max-w-6xl mx-auto py-16 px-6">
-      <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-gray-100">
-        Available Vehicles
+    <div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        All Vehicles
       </h2>
-      <p className="text-center text-lg text-gray-600 dark:text-gray-300 mt-2">
-        Choose from a variety of vehicles for rent.
-      </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-10">
-        {vehicles.map((vehicle) => (
-          <VehicleCard key={vehicle.vehicle_id} vehicle={vehicle} />
-        ))}
-      </div>
-    </section>
+      {/* Scooties Section */}
+      <h3 className="text-lg font-semibold mt-4 mb-2">Scooties</h3>
+      {renderVehicles("Scooty")}
+
+      {/* Bikes Section */}
+      <h3 className="text-lg font-semibold mt-4 mb-2">Bikes</h3>
+      {renderVehicles("Bike")}
+
+      {/* Cars Section */}
+      <h3 className="text-lg font-semibold mt-4 mb-2">Cars</h3>
+      {renderVehicles("Car")}
+    </div>
   );
 }
