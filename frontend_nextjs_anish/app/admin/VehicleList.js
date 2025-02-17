@@ -26,7 +26,6 @@ export default function VehicleList() {
     fetchVehicles();
   }, []);
 
-  // Function to remove a vehicle
   const deleteVehicle = async (id) => {
     try {
       const response = await fetch(

@@ -14,7 +14,8 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Prepare the form data
+    console.log("Sending data:", { username, password });
+
     const formData = new URLSearchParams();
     formData.append("username", username);
     formData.append("password", password);
@@ -26,16 +27,19 @@ export default function LoginPage() {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: formData.toString(),
-        credentials: "include", // Important: includes cookies in the request
+        credentials: "include",
       });
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
 
       if (response.ok) {
         const data = await response.json();
-        // Assuming the backend sets the cookie and returns a token
-        // The cookie will be automatically handled by the browser
+        console.log("Login successful:", data);
         router.push("/vehicles");
       } else {
         const errorData = await response.json();
+        console.error("Login failed:", errorData);
         setErrorMessage(errorData.message || "Login failed. Please try again.");
       }
     } catch (error) {
