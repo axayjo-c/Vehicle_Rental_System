@@ -4,28 +4,28 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import FeatureCard from "./components/FeatureCard";
-import CarCard from "./components/CarCard";
+import VehicleCard from "./components/VehicleCard"; // Use generic VehicleCard
 import TestimonialCard from "./components/TestimonialCard";
 import FAQItem from "./components/FAQItem";
+
 export default function Home() {
   return (
     <main className="w-full min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      {/* 🚗 Hero Section */}
+      {/* 🏍️ Hero Section */}
       <section className="relative w-full text-center py-20 px-6 bg-[var(--section-bg)] shadow-md">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-5xl font-extrabold sm:text-6xl leading-tight drop-shadow-lg">
-            Rent Your Dream Car, <br /> Drive With Confidence
+            Rent Your Perfect Ride, <br /> Scooty, Bike, or Car!
           </h1>
           <p className="text-lg text-[var(--text-muted)] mt-4">
-            Premium car rentals for every journey – easy, affordable, and
-            reliable.
+            Premium rentals for every journey – easy, affordable, and reliable.
           </p>
-          <Link href="/cars">
+          <Link href="/vehicles">
             <button
               className="btn-primary mt-6 flex items-center gap-2"
-              aria-label="Explore Cars"
+              aria-label="Explore Vehicles"
             >
-              Explore Cars <ChevronRight size={20} />
+              Explore Vehicles <ChevronRight size={20} />
             </button>
           </Link>
         </div>
@@ -36,9 +36,9 @@ export default function Home() {
         {[
           {
             icon: "Car",
-            title: "Wide Range of Cars",
+            title: "Wide Range of Vehicles",
             description:
-              "Choose from premium & economy cars for every occasion.",
+              "Choose from scooties, bikes, and cars for every occasion.",
           },
           {
             icon: "Clock",
@@ -57,34 +57,46 @@ export default function Home() {
         ))}
       </section>
 
-      {/* 🚘 Car Showcase Section */}
+      {/* 🚘 Vehicle Showcase Section */}
       <section className="max-w-6xl mx-auto py-16 px-6">
         <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-gray-100">
-          Popular Cars
+          Popular Rentals
         </h2>
         <p className="text-center text-lg text-gray-600 dark:text-gray-300 mt-2">
-          Experience luxury and performance with our most popular rentals.
+          Find the best scooties, bikes, and cars for your journey.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-10">
           {[
             {
-              name: "Tesla Model 3",
-              price: "₹5,500/day",
-              img: "/cars/tesla.jpg",
+              vehicle_id: "1", // Example ID
+              brand: "Honda",
+              model: "Activa 6G",
+              type: "Scooty",
+              price_per_day: "₹500/day",
+              image_url: "/scooties/activa.jpg",
+              availability: "Available",
             },
             {
-              name: "Mercedes-Benz G-Class",
-              price: "₹15,000/day",
-              img: "/cars/mercedes.jpg",
+              vehicle_id: "2", // Example ID
+              brand: "Royal Enfield",
+              model: "Classic 350",
+              type: "Bike",
+              price_per_day: "₹1,200/day",
+              image_url: "/bikes/classic350.jpg",
+              availability: "Available",
             },
             {
-              name: "BMW X5",
-              price: "₹10,000/day",
-              img: "/cars/bmw.jpg",
+              vehicle_id: "3", // Example ID
+              brand: "Maruti Suzuki",
+              model: "Swift",
+              type: "Car",
+              price_per_day: "₹3,000/day",
+              image_url: "/cars/swift.jpg",
+              availability: "Available",
             },
-          ].map((car, index) => (
-            <CarCard key={index} car={car} />
+          ].map((vehicle, index) => (
+            <VehicleCard key={index} vehicle={vehicle} />
           ))}
         </div>
       </section>
@@ -96,7 +108,7 @@ export default function Home() {
           {[
             {
               name: "Amit Sharma",
-              review: "Fantastic service! The car was in perfect condition.",
+              review: "Fantastic service! The scooty was in perfect condition.",
               rating: 5,
             },
             {
@@ -123,9 +135,9 @@ export default function Home() {
         <div className="mt-8 space-y-6">
           {[
             {
-              question: "What documents do I need to rent a car?",
+              question: "What documents do I need to rent a vehicle?",
               answer:
-                "You need a valid driver's license, ID proof, and a credit card for security deposit.",
+                "You need a valid driver's license, ID proof, and a credit card for the security deposit.",
             },
             {
               question: "Is there a mileage limit?",
@@ -133,7 +145,7 @@ export default function Home() {
                 "Yes, mileage limits depend on the selected plan. Extra charges may apply for exceeding the limit.",
             },
             {
-              question: "What happens if I return the car late?",
+              question: "What happens if I return the vehicle late?",
               answer:
                 "Late returns may incur additional charges. Please check the rental terms for details.",
             },

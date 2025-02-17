@@ -7,7 +7,9 @@ export default function Pricing() {
   return (
     <main className="w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 px-6">
       <div className="max-w-5xl mx-auto text-center">
-        <h1 className="text-4xl font-bold">Affordable Pricing Plans</h1>
+        <h1 className="text-4xl font-bold text-[var(--highlight)]">
+          Affordable Pricing Plans
+        </h1>
         <p className="text-lg text-[var(--text-muted)] mt-3">
           Choose the perfect rental plan that suits your needs.
         </p>
@@ -19,7 +21,7 @@ export default function Pricing() {
           title="Basic Plan"
           price="₹2,500/day"
           features={[
-            "Economy Cars",
+            "Economy Scooties & Bikes",
             "100 KM Free",
             "Basic Insurance",
             "24/7 Support",
@@ -35,7 +37,6 @@ export default function Pricing() {
             "Standard Insurance",
             "Priority Support",
           ]}
-          highlighted
           buttonText="Choose Standard"
         />
         <PricingCard
@@ -57,7 +58,9 @@ export default function Pricing() {
           Need a custom rental plan? Contact us for a tailored package.
         </p>
         <Link href="/contact">
-          <button className="btn-primary mt-4">Contact Us</button>
+          <button className="btn-primary mt-4 py-3 px-6 text-xl rounded-lg shadow-md transition-all transform hover:scale-105">
+            Contact Us
+          </button>
         </Link>
       </div>
     </main>
@@ -65,30 +68,20 @@ export default function Pricing() {
 }
 
 /* 📌 Reusable Pricing Card Component */
-function PricingCard({ title, price, features, highlighted, buttonText }) {
+function PricingCard({ title, price, features, buttonText }) {
   return (
-    <div
-      className={`p-6 border rounded-lg shadow-md ${
-        highlighted
-          ? "bg-[var(--btn-bg)] text-white scale-105"
-          : "bg-[var(--section-bg)]"
-      }`}
-    >
+    <div className="p-6 border rounded-lg shadow-xl bg-[var(--section-bg)]">
       <h2 className="text-2xl font-bold text-center">{title}</h2>
       <p className="text-xl font-semibold text-center mt-2">{price}</p>
       <ul className="mt-4 space-y-2">
         {features.map((feature, index) => (
-          <li key={index} className="flex items-center gap-2">
+          <li key={index} className="flex items-center gap-2 text-sm">
             <CheckCircle className="w-5 h-5 text-green-500" />
             {feature}
           </li>
         ))}
       </ul>
-      <button
-        className={`mt-6 w-full btn-primary ${
-          highlighted ? "bg-white text-[var(--btn-bg)]" : ""
-        }`}
-      >
+      <button className="mt-6 w-full btn-primary py-3 px-6 text-xl rounded-lg transition-all transform hover:scale-105">
         {buttonText}
       </button>
     </div>
