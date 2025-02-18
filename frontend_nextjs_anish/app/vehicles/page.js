@@ -1,4 +1,4 @@
-"use client"; // Ensure this is at the top of your file
+"use client";
 
 import { useEffect, useState } from "react";
 import VehicleCard from "../components/VehicleCard";
@@ -16,7 +16,8 @@ export default function Vehicles() {
 
     const fetchVehicles = async () => {
       try {
-        console.log("Fetching vehicles from:", `${API_URL}/api/vehicles`); // Debug log for the API URL
+        console.log("Fetching vehicles from:", `${API_URL}/api/vehicles`);
+
         const response = await fetch(`${API_URL}/api/vehicles`, {
           signal: abortController.signal,
           headers: {
@@ -29,11 +30,11 @@ export default function Vehicles() {
         }
 
         const data = await response.json();
-        console.log("Fetched vehicles:", data); // Log the fetched data
+        console.log("Fetched vehicles:", data);
         setVehicles(data);
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Error fetching vehicles:", error); // Log the error if it's not an abort error
+          console.error("Error fetching vehicles:", error);
           setError(error.message);
         }
       } finally {
@@ -42,8 +43,7 @@ export default function Vehicles() {
     };
 
     fetchVehicles();
-
-    return () => abortController.abort(); // Cleanup on unmount
+    return () => abortController.abort();
   }, []);
 
   if (loading) {
@@ -55,18 +55,15 @@ export default function Vehicles() {
   }
 
   if (error) {
-    console.log("Error encountered:", error); // Log error if present
     return <p className="text-center text-red-500 py-16">Error: {error}</p>;
   }
-
-  // Debug log for vehicles state
-  console.log("Vehicles state:", vehicles);
 
   // Filter vehicles by type
   const cars = vehicles.filter((vehicle) => vehicle.type === "Car");
   const bikes = vehicles.filter((vehicle) => vehicle.type === "Bike");
+  const scooties = vehicles.filter((vehicle) => vehicle.type === "Scooty");
   const trucks = vehicles.filter((vehicle) => vehicle.type === "Truck");
-  const suvs = vehicles.filter((vehicle) => vehicle.type === "SUV"); // Add filtering for SUV
+  const suvs = vehicles.filter((vehicle) => vehicle.type === "SUV");
 
   return (
     <main className="w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 px-6">
@@ -101,6 +98,18 @@ export default function Vehicles() {
         </section>
       )}
 
+      {/* 🛵 Scooties Section */}
+      {scooties.length > 0 && (
+        <section>
+          <h2 className="text-3xl font-semibold mt-10 text-center">Scooties</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-6">
+            {scooties.map((scooty) => (
+              <VehicleCard key={scooty.vehicle_id} vehicle={scooty} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 🚚 Trucks Section */}
       {trucks.length > 0 && (
         <section>
@@ -113,7 +122,7 @@ export default function Vehicles() {
         </section>
       )}
 
-      {/* 🚙 SUV Section */}
+      {/* 🚙 SUVs Section */}
       {suvs.length > 0 && (
         <section>
           <h2 className="text-3xl font-semibold mt-10 text-center">SUVs</h2>

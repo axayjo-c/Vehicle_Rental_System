@@ -13,39 +13,66 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage("");
 
-    console.log("Sending data:", { username, password });
+    console.group("🔹 Login Attempt");
+    console.log(
+      "🌐 API Endpoint:",
+      `${process.env.NEXT_PUBLIC_API_URL}/do-login`
+    );
 
-    const formData = new URLSearchParams();
-    formData.append("username", username);
-    formData.append("password", password);
+    if (!username || !password) {
+      console.error("⚠️ Error: Username or password is empty.");
+      setErrorMessage("Username and password are required.");
+      setIsLoading(false);
+      console.groupEnd();
+      return;
+    }
+
+    // Encode username and password in Base64 for Basic Auth
+    const credentials = btoa(`${username}:${password}`);
+    console.log("🔑 Encoded Credentials: [HIDDEN] "); // Do not log credentials in production
+    console.log(credentials);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData.toString(),
-        credentials: "include",
-      });
+      console.log("📤 Sending login request...");
 
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/do-login`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${credentials}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("📥 Response received. Status:", response.status);
 
       if (response.ok) {
-        const data = await response.json();
-        console.log("Login successful:", data);
-        router.push("/vehicles");
+        const token = await response.text();
+        console.log("✅ Login Successful. Token received:", token);
+
+        // Store the token in localStorage
+        localStorage.setItem("token", token);
+        console.log("💾 Token saved in localStorage.");
+
+        console.log("🔄 Redirecting to home page...");
+        router.push("/");
       } else {
-        const errorData = await response.json();
-        console.error("Login failed:", errorData);
-        setErrorMessage(errorData.message || "Login failed. Please try again.");
+        console.warn("⚠️ Login Failed. Status:", response.status);
+
+        const errorText = await response.text();
+        console.warn("⚠️ Server Response:", errorText);
+        setErrorMessage("Invalid credentials. Please try again.");
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("❌ Network or Server Error:", error);
       setErrorMessage("An error occurred. Please try again.");
     } finally {
+      console.log("🔚 Login Attempt Finished.");
+      console.groupEnd();
       setIsLoading(false);
     }
   };

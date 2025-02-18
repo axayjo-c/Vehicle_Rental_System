@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 const AddVehicleForm = ({ setShowForm }) => {
   const [newVehicle, setNewVehicle] = useState({
@@ -9,7 +10,7 @@ const AddVehicleForm = ({ setShowForm }) => {
     availability: "",
     registration_number: "",
   });
-  const [statusMessage, setStatusMessage] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
@@ -18,35 +19,18 @@ const AddVehicleForm = ({ setShowForm }) => {
   };
 
   const validateForm = () => {
-    return (
-      newVehicle.type &&
-      newVehicle.brand &&
-      newVehicle.model &&
-      newVehicle.price_per_day &&
-      newVehicle.availability &&
-      newVehicle.registration_number
-    );
+    return Object.values(newVehicle).every((val) => val.trim() !== "");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setStatusMessage("All fields are required.");
+      toast.error("All fields are required.");
       return;
     }
 
-    const vehicleData = {
-      type: newVehicle.type,
-      brand: newVehicle.brand,
-      model: newVehicle.model,
-      price_per_day: newVehicle.price_per_day,
-      availability: newVehicle.availability,
-      registration_number: newVehicle.registration_number,
-    };
-
     setIsLoading(true);
-    setStatusMessage("");
 
     try {
       const response = await fetch(
@@ -56,32 +40,20 @@ const AddVehicleForm = ({ setShowForm }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(vehicleData),
+          body: JSON.stringify(newVehicle),
         }
       );
 
-      const text = await response.text();
-      console.log("Raw Response Text:", text);
-
-      if (response.ok) {
-        try {
-          const responseBody = JSON.parse(text);
-          console.log("Parsed Response Body:", responseBody);
-          setStatusMessage(
-            responseBody.message || "Vehicle added successfully"
-          );
-          setShowForm(false);
-        } catch (err) {
-          console.error("Error parsing JSON:", err);
-          setStatusMessage("Failed to parse response from the server.");
-        }
-      } else {
-        console.error("Non-OK Response:", text);
-        setStatusMessage("Failed to add vehicle. Please try again.");
+      if (!response.ok) {
+        throw new Error("Failed to add vehicle.");
       }
+
+      const data = await response.json();
+      toast.success(data.message || "Vehicle added successfully!");
+      setShowForm(false);
     } catch (error) {
       console.error("Error adding vehicle:", error);
-      setStatusMessage("An error occurred while adding the vehicle.");
+      toast.error("An error occurred while adding the vehicle.");
     } finally {
       setIsLoading(false);
     }
@@ -95,76 +67,39 @@ const AddVehicleForm = ({ setShowForm }) => {
       <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
         Add a New Vehicle
       </h3>
-      <div className="space-y-2">
-        <input
-          type="text"
-          name="type"
-          value={newVehicle.type}
-          onChange={handleInputChange}
-          placeholder="Vehicle Type"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-        />
-        <input
-          type="text"
-          name="brand"
-          value={newVehicle.brand}
-          onChange={handleInputChange}
-          placeholder="Brand"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-        />
-        <input
-          type="text"
-          name="model"
-          value={newVehicle.model}
-          onChange={handleInputChange}
-          placeholder="Model"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-        />
-        <input
-          type="number"
-          name="price_per_day"
-          value={newVehicle.price_per_day}
-          onChange={handleInputChange}
-          placeholder="Price per day"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-        />
-        <input
-          type="text"
-          name="availability"
-          value={newVehicle.availability}
-          onChange={handleInputChange}
-          placeholder="Availability (Available/Unavailable)"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-        />
-        <input
-          type="text"
-          name="registration_number"
-          value={newVehicle.registration_number}
-          onChange={handleInputChange}
-          placeholder="Registration Number"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-        />
-      </div>
 
-      {/* Display status message */}
-      {statusMessage && (
-        <div
-          className={`mt-4 p-3 text-center rounded-md ${
-            statusMessage.includes("success")
-              ? "bg-green-100 text-green-600"
-              : "bg-red-100 text-red-600"
-          }`}
-        >
-          {statusMessage}
-        </div>
-      )}
+      {/* Form Fields */}
+      {[
+        "type",
+        "brand",
+        "model",
+        "price_per_day",
+        "availability",
+        "registration_number",
+      ].map((field) => (
+        <input
+          key={field}
+          type={field === "price_per_day" ? "number" : "text"}
+          name={field}
+          value={newVehicle[field]}
+          onChange={handleInputChange}
+          placeholder={field.replace("_", " ").toUpperCase()}
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+        />
+      ))}
 
+      {/* Buttons */}
       <div className="flex justify-between mt-4">
         <button
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+          disabled={isLoading}
+          className={`py-2 px-4 rounded-lg text-white transition ${
+            isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          Add Vehicle
+          {isLoading ? "Adding..." : "Add Vehicle"}
         </button>
         <button
           type="button"
