@@ -147,24 +147,6 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* Vehicle Category Selection */}
-      {activeTab === "vehicles" && (
-        <div className="mb-4 text-center">
-          <select
-            className="p-2 border rounded bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none transition"
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="">All Vehicles</option>
-            <option value="Car">Cars</option>
-            <option value="Bike">Bikes</option>
-            <option value="Scooty">Scooties</option>
-            <option value="Truck">Trucks</option>
-            <option value="SUV">SUVs</option>
-            <option value="Other">Others</option>
-          </select>
-        </div>
-      )}
-
       {/* Add Vehicle Form Toggle */}
       {activeTab === "vehicles" && (
         <div className="text-center mb-4">
