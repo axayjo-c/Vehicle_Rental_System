@@ -32,7 +32,6 @@ export default function LoginPage() {
     // Encode username and password in Base64 for Basic Auth
     const credentials = btoa(`${username}:${password}`);
     console.log("🔑 Encoded Credentials: [HIDDEN] "); // Do not log credentials in production
-    console.log(credentials);
 
     try {
       console.log("📤 Sending login request...");
@@ -58,8 +57,12 @@ export default function LoginPage() {
         localStorage.setItem("token", token);
         console.log("💾 Token saved in localStorage.");
 
-        console.log("🔄 Redirecting to home page...");
-        router.push("/");
+        // Retrieve stored redirect URL (if available)
+        const redirectTo = localStorage.getItem("redirectAfterLogin") || "/";
+        localStorage.removeItem("redirectAfterLogin"); // Clear stored URL after use
+
+        console.log("🔄 Redirecting to:", redirectTo);
+        router.push(redirectTo); // Redirect to the saved page
       } else {
         console.warn("⚠️ Login Failed. Status:", response.status);
 

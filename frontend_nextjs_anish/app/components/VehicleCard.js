@@ -1,21 +1,32 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // Import router for redirection
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import BookingForm from "./BookingForm";
 
 export default function VehicleCard({ vehicle }) {
-  // Debugging log
   console.log("VehicleCard received vehicle:", vehicle);
 
-  // Always call useState unconditionally
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const isAvailable = vehicle ? vehicle.availability === "Available" : false; // Default to false if vehicle is undefined
+  const router = useRouter(); // Initialize router
+
+  const isAvailable = vehicle ? vehicle.availability === "Available" : false;
   const availabilityClass = isAvailable
     ? "text-green-600 dark:text-green-400"
     : "text-red-600 dark:text-red-400";
 
   const handleBookingOpen = () => {
-    setIsBookingOpen(true); // Directly set to true without reset
+    const token = localStorage.getItem("token"); // Check if user is logged in
+
+    if (!token) {
+      // Store the current page in localStorage before redirecting to login
+      localStorage.setItem("redirectAfterLogin", window.location.pathname);
+      router.push("/login");
+      return;
+    }
+
+    // Open booking form if user is authenticated
+    setIsBookingOpen(true);
   };
 
   if (!vehicle) {

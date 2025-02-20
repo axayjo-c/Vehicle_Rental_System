@@ -7,7 +7,7 @@ const AddVehicleForm = ({ setShowForm }) => {
     brand: "",
     model: "",
     price_per_day: "",
-    availability: "",
+    availability: "Unavailable",
     registration_number: "",
   });
 
@@ -15,27 +15,47 @@ const AddVehicleForm = ({ setShowForm }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewVehicle((prev) => ({ ...prev, [name]: value }));
+
+    setNewVehicle((prev) => ({
+      ...prev,
+      [name]: name === "price_per_day" ? value.replace(/[^0-9.]/g, "") : value,
+    }));
   };
 
   const validateForm = () => {
-    if (
-      !newVehicle.type ||
-      !newVehicle.brand ||
-      !newVehicle.model ||
-      !newVehicle.registration_number
-    ) {
+    const {
+      type,
+      brand,
+      model,
+      price_per_day,
+      availability,
+      registration_number,
+    } = newVehicle;
+
+    if (!type || !brand || !model || !registration_number) {
       toast.error("All fields are required.");
       return false;
     }
 
-    if (isNaN(newVehicle.price_per_day) || newVehicle.price_per_day <= 0) {
-      toast.error("Price per day must be a positive number.");
+    // Ensure price is a positive floating value
+    const price = parseFloat(price_per_day);
+    if (isNaN(price) || price <= 0) {
+      toast.error("Price per day must be a positive floating value.");
       return false;
     }
 
-    if (!["yes", "no"].includes(newVehicle.availability.toLowerCase())) {
-      toast.error('Availability must be "yes" or "no".');
+    // Ensure availability is either "Available" or "Unavailable"
+    if (!["Available", "Unavailable"].includes(availability)) {
+      toast.error('Availability must be "Available" or "Unavailable".');
+      return false;
+    }
+
+    // Ensure registration number is a non-empty string
+    if (
+      typeof registration_number !== "string" ||
+      registration_number.trim() === ""
+    ) {
+      toast.error("Registration number must be a valid string.");
       return false;
     }
 
@@ -45,21 +65,12 @@ const AddVehicleForm = ({ setShowForm }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      console.warn("⚠️ Form validation failed: All fields are required.");
-      toast.error("All fields are required.");
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/vehicles`;
     const token = localStorage.getItem("token");
-
-    console.log("🔍 API Request Debugging:");
-    console.log("➡️ API URL:", apiUrl);
-    console.log("📦 Request Payload:", JSON.stringify(newVehicle, null, 2));
-    console.log("🔑 Authorization Token:", token ? "Present" : "Missing");
 
     try {
       const response = await fetch(apiUrl, {
@@ -68,45 +79,32 @@ const AddVehicleForm = ({ setShowForm }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newVehicle),
+        body: JSON.stringify({
+          ...newVehicle,
+          price_per_day: parseFloat(newVehicle.price_per_day), // Ensure price is a float
+        }),
         mode: "cors",
       });
 
-      console.log("📨 Response Status:", response.status);
-      console.log("📩 Response Headers:", [...response.headers]);
-
-      // Try parsing JSON response
-      let data;
       const rawText = await response.text();
-      console.log("📜 Raw API Response:", rawText);
-
+      let data;
       try {
         data = JSON.parse(rawText);
-      } catch (jsonError) {
-        console.warn("⚠️ Response is not JSON. Using raw text instead.");
+      } catch {
         data = { message: rawText };
       }
 
-      console.log("📩 Parsed API Response:", JSON.stringify(data, null, 2));
-
       if (!response.ok) {
-        console.error(
-          "❌ API Error:",
-          data.message || "Failed to add vehicle."
-        );
         throw new Error(data.message || "Failed to add vehicle.");
       }
 
       toast.success(data.message || "Vehicle added successfully!");
-      console.log("✅ Vehicle added successfully!");
       setShowForm(false);
     } catch (error) {
-      console.error("❌ Error adding vehicle:", error.message);
       toast.error(
         error.message || "An error occurred while adding the vehicle."
       );
     } finally {
-      console.log("🔄 Request Completed.");
       setIsLoading(false);
     }
   };
@@ -125,8 +123,8 @@ const AddVehicleForm = ({ setShowForm }) => {
         { name: "type", label: "Vehicle Type" },
         { name: "brand", label: "Brand" },
         { name: "model", label: "Model" },
-        { name: "price_per_day", label: "Price Per Day (₹)", type: "number" },
-        { name: "availability", label: "Availability (yes/no)" },
+        { name: "price_per_day", label: "Price Per Day (₹)", type: "text" },
+        { name: "availability", label: "Availability (Available/Unavailable)" },
         { name: "registration_number", label: "Registration Number" },
       ].map(({ name, label, type = "text" }) => (
         <input

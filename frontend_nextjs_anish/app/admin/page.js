@@ -10,7 +10,6 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [showForm, setShowForm] = useState(false);
   const [vehicles, setVehicles] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(true);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -29,11 +28,11 @@ export default function AdminPage() {
       if (!response.ok) throw new Error("Failed to fetch vehicles");
 
       const data = await response.json();
-      console.log("Vehicles fetched successfully:", data);
+      console.log("✅ Vehicles fetched successfully:", data);
       setVehicles(data);
     } catch (error) {
       if (error.name !== "AbortError") {
-        console.error("Error fetching vehicles:", error);
+        console.error("❌ Error fetching vehicles:", error);
         toast.error("Failed to fetch vehicles.");
       }
     } finally {
@@ -50,7 +49,7 @@ export default function AdminPage() {
   // Add Vehicle
   const addVehicle = async (vehicleData) => {
     try {
-      console.log("Adding new vehicle:", vehicleData);
+      console.log("🚗 Adding new vehicle:", vehicleData);
       const response = await fetch(`${API_URL}/api/admin/vehicles`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -59,65 +58,14 @@ export default function AdminPage() {
 
       if (!response.ok) throw new Error("Failed to add vehicle");
 
-      toast.success("Vehicle added successfully!");
+      toast.success("✅ Vehicle added successfully!");
       setShowForm(false);
       fetchVehicles(); // Refresh list
     } catch (error) {
-      console.error("Error adding vehicle:", error);
+      console.error("❌ Error adding vehicle:", error);
       toast.error("Failed to add vehicle.");
     }
   };
-
-  // Update Vehicle
-  const updateVehicle = async (vehicleId, updatedData) => {
-    try {
-      console.log(`Updating vehicle ID ${vehicleId}:`, updatedData);
-      const response = await fetch(
-        `${API_URL}/api/admin/vehicles/${vehicleId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedData),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to update vehicle");
-
-      toast.success("Vehicle updated successfully!");
-      fetchVehicles(); // Refresh list
-    } catch (error) {
-      console.error("Error updating vehicle:", error);
-      toast.error("Failed to update vehicle.");
-    }
-  };
-
-  // Delete Vehicle with Confirmation Modal
-  const deleteVehicle = async (vehicleId) => {
-    if (!confirm("Are you sure you want to delete this vehicle?")) return;
-
-    try {
-      console.log(`Deleting vehicle ID: ${vehicleId}`);
-      const response = await fetch(
-        `${API_URL}/api/admin/vehicles/${vehicleId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to delete vehicle");
-
-      toast.success("Vehicle deleted successfully!");
-      fetchVehicles(); // Refresh list
-    } catch (error) {
-      console.error("Error deleting vehicle:", error);
-      toast.error("Failed to delete vehicle.");
-    }
-  };
-
-  // Filter vehicles by category
-  const filteredVehicles = selectedCategory
-    ? vehicles.filter((vehicle) => vehicle.type === selectedCategory)
-    : vehicles;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6">
@@ -132,10 +80,7 @@ export default function AdminPage() {
         {["bookings", "vehicles"].map((tab) => (
           <button
             key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              if (tab === "bookings") setSelectedCategory("");
-            }}
+            onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium rounded transition ${
               activeTab === tab
                 ? "bg-blue-600 text-white"
@@ -171,16 +116,11 @@ export default function AdminPage() {
         {activeTab === "bookings" ? (
           <BookingList />
         ) : loading ? (
-          <p className="text-center text-gray-500 dark:text-gray-400">
-            Loading vehicles...
-          </p>
-        ) : filteredVehicles.length > 0 ? (
-          <VehicleList
-            vehicles={filteredVehicles}
-            fetchVehicles={fetchVehicles}
-            updateVehicle={updateVehicle}
-            deleteVehicle={deleteVehicle}
-          />
+          <div className="flex justify-center items-center">
+            <span className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></span>
+          </div>
+        ) : vehicles.length > 0 ? (
+          <VehicleList vehicles={vehicles} fetchVehicles={fetchVehicles} />
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400">
             No vehicles available.

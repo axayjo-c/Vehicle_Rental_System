@@ -33,6 +33,21 @@ export default function Header() {
   return (
     <header className="header fixed top-0 left-0 w-full z-50 backdrop-blur-lg border-b border-[var(--border-color)] shadow-lg transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between py-4">
+        {/* Admin */}
+        <Link
+          href="/admin"
+          className="text-2xl font-bold text-[var(--foreground)] hover:scale-105 transition-transform"
+        >
+          Admin
+        </Link>
+        {/* Login */}
+        <Link
+          href="/login"
+          className="text-2xl font-bold text-[var(--foreground)] hover:scale-105 transition-transform"
+        >
+          Login
+        </Link>
+
         {/* Logo */}
         <Link
           href="/"
