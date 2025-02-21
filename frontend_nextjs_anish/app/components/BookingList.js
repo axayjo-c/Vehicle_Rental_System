@@ -12,7 +12,6 @@ export default function BookingList() {
   const [view, setView] = useState("Active");
   const [searchQuery, setSearchQuery] = useState("");
   const [token, setToken] = useState(null);
-  const [processingId, setProcessingId] = useState(null);
   const [pastFilter, setPastFilter] = useState("All");
 
   useEffect(() => {
