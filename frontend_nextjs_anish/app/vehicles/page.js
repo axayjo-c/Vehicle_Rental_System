@@ -66,7 +66,7 @@ export default function Vehicles() {
   const suvs = vehicles.filter((vehicle) => vehicle.type === "SUV");
 
   return (
-    <main className="w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 px-6">
+    <main className="w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] py-16 pt-28 px-6">
       <div className="max-w-5xl mx-auto text-center">
         <h1 className="text-4xl font-bold">Explore Our Vehicles</h1>
         <p className="text-lg text-[var(--text-muted)] mt-3">

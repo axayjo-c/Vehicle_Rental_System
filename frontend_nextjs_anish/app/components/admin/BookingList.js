@@ -13,6 +13,7 @@ export default function BookingList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [token, setToken] = useState(null);
   const [pastFilter, setPastFilter] = useState("All");
+  const [processingId, setProcessingId] = useState(null); // ✅ Fixed missing state
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -24,8 +25,6 @@ export default function BookingList() {
     }
     setToken(storedToken);
     fetchActiveBookings(storedToken);
-
-    // ✅ Store fetched past bookings in state
     fetchPastBookings(storedToken).then(setPastBookings);
   }, []);
 
@@ -40,7 +39,7 @@ export default function BookingList() {
 
       const data = await response.json();
       setActiveBookings(
-        data
+        (data || [])
           .map((booking) => ({
             id: booking.booking_id,
             vehicleName:
@@ -78,8 +77,7 @@ export default function BookingList() {
 
       const data = JSON.parse(text);
 
-      // ✅ Ensure bookings have valid properties
-      const validBookings = data
+      return (data || [])
         .filter((booking) => booking.start_date && booking.end_date)
         .map((booking) => ({
           id: booking.booking_id,
@@ -90,8 +88,6 @@ export default function BookingList() {
           pricePerDay: booking.price_per_day,
           status: booking.status?.toLowerCase() || "unknown",
         }));
-
-      return validBookings;
     } catch (error) {
       console.error("Error fetching past bookings:", error);
       return [];
@@ -110,7 +106,7 @@ export default function BookingList() {
       return;
     }
 
-    setProcessingId(bookingId);
+    setProcessingId(bookingId); // ✅ Set processing ID before request
 
     try {
       const response = await fetch(
@@ -132,7 +128,7 @@ export default function BookingList() {
       console.error(`Error updating booking ${bookingId}:`, error);
       toast.error(`Failed to ${status} booking.`);
     } finally {
-      setProcessingId(null);
+      setProcessingId(null); // ✅ Reset after completion
     }
   };
 
@@ -193,7 +189,7 @@ export default function BookingList() {
           >
             <option value="All">All</option>
             <option value="confirmed">Accepted</option>
-            <option value="Rejected">Rejected</option>
+            <option value="rejected">Rejected</option>
           </select>
         )}
       </div>
@@ -221,7 +217,7 @@ export default function BookingList() {
                     {booking.pricePerDay}/day
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-lg text-sm font-medium`}>
+                <span className="px-3 py-1 rounded-lg text-sm font-medium">
                   {booking.status}
                 </span>
               </div>
@@ -229,14 +225,16 @@ export default function BookingList() {
               {view === "Active" && booking.status === "Pending" && (
                 <div className="flex gap-2 mt-3">
                   <button
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
                     onClick={() => confirmBooking(booking.id, "confirm")}
+                    disabled={processingId === booking.id}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg"
                   >
                     ✅ Confirm
                   </button>
                   <button
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
                     onClick={() => confirmBooking(booking.id, "reject")}
+                    disabled={processingId === booking.id}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
                   >
                     ❌ Reject
                   </button>

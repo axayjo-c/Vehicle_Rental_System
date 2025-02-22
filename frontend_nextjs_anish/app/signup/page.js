@@ -3,89 +3,81 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
+    setSuccessMessage("");
 
-    console.group("🔹 Login Attempt");
-    console.log(
-      "🌐 API Endpoint:",
-      `${process.env.NEXT_PUBLIC_API_URL}/do-login`
-    );
+    console.group("🔹 Signup Attempt");
 
-    if (!username || !password) {
-      console.error("⚠️ Error: Username or password is empty.");
-      setErrorMessage("Username and password are required.");
+    if (!username || !password || !confirmPassword) {
+      console.error("⚠️ Error: Fields are empty.");
+      setErrorMessage("All fields are required.");
       setIsLoading(false);
       console.groupEnd();
       return;
     }
 
-    const credentials = btoa(`${username}:${password}`);
-    console.log("🔑 Encoded Credentials: [HIDDEN]");
+    if (password !== confirmPassword) {
+      console.error("⚠️ Error: Passwords do not match.");
+      setErrorMessage("Passwords do not match.");
+      setIsLoading(false);
+      console.groupEnd();
+      return;
+    }
 
     try {
-      console.log("📤 Sending login request...");
+      console.log("📤 Sending signup request...");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/do-login`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/register`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Basic ${credentials}`,
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
         }
       );
 
       console.log("📥 Response received. Status:", response.status);
 
       if (response.ok) {
-        const token = await response.text();
-        console.log("✅ Login Successful. Token received:", token);
-
-        localStorage.setItem("token", token);
-        console.log("💾 Token saved in localStorage.");
-
-        const redirectTo = localStorage.getItem("redirectAfterLogin") || "/";
-        localStorage.removeItem("redirectAfterLogin");
-
-        console.log("🔄 Redirecting to:", redirectTo);
-        router.push(redirectTo);
+        console.log("✅ Signup Successful.");
+        setSuccessMessage("Account created successfully! Redirecting...");
+        setTimeout(() => router.push("/login"), 2000);
       } else {
-        console.warn("⚠️ Login Failed. Status:", response.status);
-
         const errorText = await response.text();
         console.warn("⚠️ Server Response:", errorText);
-        setErrorMessage("Invalid credentials. Please try again.");
+        setErrorMessage("Signup failed. Try a different username.");
       }
     } catch (error) {
       console.error("❌ Network or Server Error:", error);
       setErrorMessage("An error occurred. Please try again.");
     } finally {
-      console.log("🔚 Login Attempt Finished.");
+      console.log("🔚 Signup Attempt Finished.");
       console.groupEnd();
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex justify-center items-center p-6 transition-all duration-300">
+    <div className="min-h-screen bg-[var(--background)]  text-[var(--foreground)] flex justify-center items-center p-6 transition-all duration-300">
       <div className="bg-[var(--section-bg)] p-8 rounded-lg shadow-lg w-full max-w-md transition-all duration-300">
         <h2 className="text-2xl font-semibold text-center text-gray-900 dark:text-gray-100 mb-6">
-          Login
+          Sign Up
         </h2>
 
-        <form onSubmit={handleLogin}>
-          {/* Username Input */}
+        <form onSubmit={handleSignup}>
+          {/* Username Field */}
           <div className="mb-4">
             <label
               htmlFor="username"
@@ -103,7 +95,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password Input */}
+          {/* Password Field */}
           <div className="mb-4">
             <label
               htmlFor="password"
@@ -121,9 +113,30 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Error Message */}
+          {/* Confirm Password Field */}
+          <div className="mb-4">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white transition-all duration-300"
+              required
+            />
+          </div>
+
+          {/* Error & Success Messages */}
           {errorMessage && (
             <p className="text-red-500 text-center mb-4">{errorMessage}</p>
+          )}
+          {successMessage && (
+            <p className="text-green-500 text-center mb-4">{successMessage}</p>
           )}
 
           {/* Buttons */}
@@ -137,16 +150,15 @@ export default function LoginPage() {
                   : "bg-blue-600 hover:bg-blue-700 text-white"
               }`}
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? "Signing up..." : "Sign Up"}
             </button>
 
-            {/* Sign Up Button */}
             <button
               type="button"
-              onClick={() => router.push("/signup")}
+              onClick={() => router.push("/login")}
               className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg shadow-md w-full transition-all duration-300"
             >
-              Sign Up
+              Back to Login
             </button>
           </div>
         </form>
