@@ -1,35 +1,110 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 
-// Dummy Data (Can be fetched from API)
-const defaultUser = {
-  username: "John Doe",
-  email: "john@example.com",
-  profilePic: "",
-};
+// API Fetch Function
+async function fetchData(url, token) {
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-const defaultBookings = [
-  { id: 1, vehicle: "Tesla Model 3", date: "2025-02-20" },
-  { id: 2, vehicle: "Yamaha R15", date: "2025-02-18" },
-];
+    const text = await response.text(); // Debugging API response
+    console.log(`Response from ${url}:`, text);
 
-const defaultTransactions = [
-  { id: 1, amount: "$120", status: "Completed" },
-  { id: 2, amount: "$80", status: "Pending" },
-];
-
-const defaultReviews = [
-  { id: 1, text: "Great ride! Smooth experience.", date: "2025-02-21" },
-];
+    if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+    return JSON.parse(text); // Manually parse JSON
+  } catch (error) {
+    console.error("API Fetch Error:", error.message);
+    return null;
+  }
+}
 
 export default function Dashboard() {
-  const [user, setUser] = useState(defaultUser);
-  const [bookings, setBookings] = useState(defaultBookings);
-  const [transactions, setTransactions] = useState(defaultTransactions);
-  const [reviews, setReviews] = useState(defaultReviews);
+  const [user, setUser] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Memoized computed values
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("Token missing. Please log in.");
+      setLoading(false);
+      return;
+    }
+
+    // Decode userId from JWT if not already stored
+    let userId = localStorage.getItem("userId");
+    if (!userId) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userId = payload.sub; // Adjust if your key is different
+        localStorage.setItem("userId", userId);
+      } catch (e) {
+        console.error("Failed to decode JWT:", e.message);
+        setError("Invalid token. Please log in again.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    if (!baseURL) {
+      setError("API base URL missing. Check your environment config.");
+      setLoading(false);
+      return;
+    }
+
+    console.log("Token:", token);
+    console.log("User ID:", userId);
+    console.log("API URL:", baseURL);
+
+    async function fetchDashboardData() {
+      setLoading(true);
+      try {
+        const [userData, bookingData, transactionData, reviewData] =
+          await Promise.all([
+            fetchData(`${baseURL}/api/user/details?username=${userId}`, token),
+            fetchData(`${baseURL}/api/user/bookings?username=${userId}`, token),
+            fetchData(
+              `${baseURL}/api/user/transactions?username=${userId}`,
+              token
+            ),
+            fetchData(`${baseURL}/api/user/reviews?username=${userId}`, token),
+          ]);
+
+        console.log("User Data:", userData);
+        console.log("Bookings:", bookingData);
+        console.log("Transactions:", transactionData);
+        console.log("Reviews:", reviewData);
+
+        if (userData) {
+          setUser({
+            id: userData.user_id,
+            username: userData.username,
+            email: userData.email,
+            profilePic: userData.profilePic || "",
+          });
+        }
+
+        setBookings(bookingData?.bookings || []);
+        setTransactions(transactionData?.transactions || []);
+        setReviews(reviewData?.reviews || []);
+      } catch (err) {
+        console.error("Dashboard Fetch Error:", err.message);
+        setError("Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, []);
+
   const hasBookings = useMemo(() => bookings.length > 0, [bookings]);
   const hasTransactions = useMemo(
     () => transactions.length > 0,
@@ -37,25 +112,32 @@ export default function Dashboard() {
   );
   const hasReviews = useMemo(() => reviews.length > 0, [reviews]);
 
+  if (loading) return <div className="text-center text-lg">Loading...</div>;
+  if (error) return <div className="text-red-500 text-center">{error}</div>;
+
   return (
-    <div className="bg-[var(--background)] text-[var(--foreground)] min-h-screen p-6 flex flex-col gap-6">
+    <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 min-h-screen p-6 pt-28 flex flex-col gap-6">
       <h1 className="text-3xl font-semibold text-center mb-4">
         User Dashboard
       </h1>
 
       {/* Profile Section */}
-      <div className="bg-[var(--card-bg)] shadow-lg p-6 rounded-xl flex flex-col items-center sm:flex-row sm:items-start gap-6">
-        <Avatar name={user.username} profilePic={user.profilePic} />
+      <div className="bg-white dark:bg-gray-800 shadow-lg p-6 rounded-xl flex flex-col items-center sm:flex-row sm:items-start gap-6">
+        <Avatar name={user?.username} profilePic={user?.profilePic} />
         <div className="text-center sm:text-left">
-          <h2 className="text-2xl font-bold">{user.username}</h2>
-          <p className="text-[var(--text-muted)]">{user.email}</p>
+          <h2 className="text-2xl font-bold">
+            {user?.username || "Guest User"}
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">
+            {user?.email || "No email available"}
+          </p>
           <div className="mt-4 flex flex-wrap gap-3 justify-center sm:justify-start">
-            <Button className="bg-[var(--btn-bg)] text-[var(--btn-text)] hover:bg-[var(--btn-hover)]">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
               Edit Profile
-            </Button>
-            <Button className="bg-red-600 text-white hover:bg-red-700">
+            </button>
+            <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
               Delete Account
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -68,12 +150,10 @@ export default function Dashboard() {
             renderItem={(booking) => (
               <li
                 key={booking.id}
-                className="flex justify-between border-b pb-2 transition hover:bg-[var(--hover-bg)] p-2 rounded-lg"
+                className="flex justify-between border-b pb-2 hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded-lg"
               >
                 <span>{booking.vehicle}</span>
-                <span className="text-sm text-[var(--text-muted)]">
-                  {booking.date}
-                </span>
+                <span className="text-sm text-gray-500">{booking.date}</span>
               </li>
             )}
           />
@@ -82,7 +162,7 @@ export default function Dashboard() {
         )}
       </Section>
 
-      {/* Transactions History */}
+      {/* Transactions */}
       <Section title="Transaction History">
         {hasTransactions ? (
           <List
@@ -90,7 +170,7 @@ export default function Dashboard() {
             renderItem={(txn) => (
               <li
                 key={txn.id}
-                className="flex justify-between border-b pb-2 transition hover:bg-[var(--hover-bg)] p-2 rounded-lg"
+                className="flex justify-between border-b pb-2 hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded-lg"
               >
                 <span>{txn.amount}</span>
                 <span
@@ -110,7 +190,7 @@ export default function Dashboard() {
         )}
       </Section>
 
-      {/* Review Section */}
+      {/* Reviews */}
       <Section title="Your Reviews">
         {hasReviews ? (
           <List
@@ -118,10 +198,10 @@ export default function Dashboard() {
             renderItem={(review) => (
               <li
                 key={review.id}
-                className="border-b pb-2 transition hover:bg-[var(--hover-bg)] p-2 rounded-lg"
+                className="border-b pb-2 hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded-lg"
               >
                 <p>{review.text}</p>
-                <div className="flex justify-between items-center text-sm text-[var(--text-muted)] mt-1">
+                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
                   <span>{review.date}</span>
                   <div className="flex gap-3">
                     <button className="text-blue-500 hover:underline">
@@ -138,69 +218,44 @@ export default function Dashboard() {
         ) : (
           <NoData message="No reviews found." />
         )}
-        <Button className="mt-4 bg-[var(--btn-bg)] text-[var(--btn-text)] hover:bg-[var(--btn-hover)]">
-          Add Review
-        </Button>
       </Section>
     </div>
   );
 }
 
-/* Avatar Component (Shows initials if no profile pic) */
-function Avatar({ name, profilePic }) {
-  if (profilePic) {
-    return (
-      <Image
-        src={profilePic}
-        alt="Profile Picture"
-        width={100}
-        height={100}
-        className="rounded-full border border-[var(--border-color)]"
-      />
-    );
-  }
-
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-
-  return (
+/* Avatar Component */
+function Avatar({ name = "User", profilePic }) {
+  return profilePic ? (
+    <Image
+      src={profilePic}
+      alt="Profile Picture"
+      width={100}
+      height={100}
+      className="rounded-full border border-gray-300"
+    />
+  ) : (
     <div className="w-24 h-24 flex items-center justify-center rounded-full bg-gray-700 text-white text-3xl font-bold border border-gray-500">
-      {initials}
+      {name?.charAt(0).toUpperCase() || "U"}
     </div>
   );
 }
 
-/* Reusable Section Wrapper */
+/* Section Wrapper */
 function Section({ title, children }) {
   return (
-    <div className="bg-[var(--card-bg)] shadow-lg p-6 rounded-xl">
-      <h2 className="text-xl font-semibold mb-3">{title}</h2>
+    <div className="bg-white dark:bg-gray-800 shadow-lg p-6 rounded-xl">
+      <h2 className="text-xl font-semibold mb-4">{title}</h2>
       {children}
     </div>
   );
-}
-
-/* Generic List Component */
-function List({ items, renderItem }) {
-  return <ul className="space-y-3">{items.map(renderItem)}</ul>;
 }
 
 /* No Data Message */
 function NoData({ message }) {
-  return <p className="text-[var(--text-muted)] text-center">{message}</p>;
+  return <p className="text-gray-500 text-center">{message}</p>;
 }
 
-/* Reusable Button Component */
-function Button({ children, className, ...props }) {
-  return (
-    <button
-      className={`px-4 py-2 rounded-lg font-medium transition-all ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
+/* List Wrapper */
+function List({ items, renderItem }) {
+  return <ul className="space-y-2">{items.map(renderItem)}</ul>;
 }
